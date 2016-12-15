@@ -16,7 +16,7 @@ create:
 		--orchestrator-type kubernetes
 
 # If something going wrang, clean up resource group
-destroy:
+clean:
 	az group deployment create --mode complete \
 		--template-file purge.json \
 		--resource-group $(RESOURCE_GROUP) \

@@ -30,6 +30,9 @@ make demo-create
 # If you change something in application definitions (*.yml files)
 # For example try change replicas: 10
 make demo-apply
+
+# Do not forget to cleanup all this stuff. It is quite pricy.
+make clean
 ```
 
 P.S. Check Makefile, it should be selfexplanatory
