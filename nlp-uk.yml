@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nlp-uk
+spec:
+  ports:
+    - port: 8080
+  selector:
+    app: nlp-uk
+    tier: services
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: nlp-uk
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: nlp-uk
+        tier: services
+    spec:
+      containers:
+      - image: chaliy/api_nlp_uk:latest
+        name: nlp-uk
+        ports:
+        - containerPort: 8080
