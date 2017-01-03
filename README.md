@@ -36,3 +36,7 @@ make clean
 ```
 
 P.S. Check Makefile, it should be selfexplanatory
+
+# Resources
+
+1. Detailed blog post [Your very own Kubernetes cluster on Azure (ACS)](https://medium.com/devoops-and-universe/your-very-own-kubernetes-cluster-on-azure-acs-9ea758dcf100)
