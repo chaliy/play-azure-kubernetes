@@ -25,7 +25,9 @@ spec:
         tier: dmz
     spec:
       containers:
-      - image: chaliy/play-azure-kubernetes-router:latest
+      - image: ${REGISTRY_NAME}-on.azurecr.io/chaliy/play-azure-kubernetes-router:latest
         name: play-azure-kubernetes-router
         ports:
         - containerPort: 80
+      imagePullSecrets:
+      - name: registrykey

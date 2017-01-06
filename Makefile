@@ -1,7 +1,8 @@
 .PHONY: all
 
-RESOURCE_GROUP=play-azure-kubernetes
-CLUSTER_NAME=chaliy-play-azure-kubernetes
+RESOURCE_GROUP?=play-azure-kubernetes
+CLUSTER_NAME?=play-azure-kubernetes
+REGISTRY_NAME?=playazurekubernetes
 
 # Create Azure Resource Group to play in
 group:
@@ -53,14 +54,14 @@ scale5:
 		--new-agent-count 5 \
 		--debug
 
-
 # Create router docker image.
 # TODO: Somehow this image should be private, no reason to pollute public hub
 router-build:
 	docker build --rm=false -t chaliy/play-azure-kubernetes-router:latest ./router
 
 router-push:
-	docker push chaliy/play-azure-kubernetes-router:latest
+	docker tag chaliy/play-azure-kubernetes-router:latest $(REGISTRY_NAME)-on.azurecr.io/chaliy/play-azure-kubernetes-router:latest
+	docker push $(REGISTRY_NAME)-on.azurecr.io/chaliy/play-azure-kubernetes-router:latest
 
 router-publish: router-build router-push
 
@@ -70,8 +71,33 @@ router-publish: router-build router-push
 #			kubectl get services/router
 # and then test with
 # 		curl http://EXTERNAL-IP/ner/mitie/uk
+# NOTE: Solution with sed is temporary untill k8s will support templating
 demo-create:
-	kubectl create -f ./ner-uk.yml,./nlp-uk.yml,./router.yml
+	kubectl create -f ./ner-uk.yml,./nlp-uk.yml
+	sed 's/$${REGISTRY_NAME}/$(REGISTRY_NAME)/g' ./router.yml | kubectl create -f -
 
 demo-apply:
-	kubectl apply -f ./ner-uk.yml,./nlp-uk.yml,./router.yml
+	kubectl apply -f ./ner-uk.yml,./nlp-uk.yml
+	sed 's/$${REGISTRY_NAME}/$(REGISTRY_NAME)/g' ./router.yml | kubectl apply -f -
+
+## Private Registry ##
+
+registry:
+	az acr create -n $(REGISTRY_NAME) \
+		-g $(RESOURCE_GROUP) \
+		-l westus # "West Europe" is not yet supported
+	az acr update -n $(REGISTRY_NAME) --admin-enabled true
+
+registry-auth:
+	$(shell \
+		az acr credential show -n $(REGISTRY_NAME) \
+			--query "join(' ', ['docker login $(REGISTRY_NAME)-on.azurecr.io', '-u', username, '-p', password])" \
+			--output list \
+	)
+
+registry-secret:
+	$(shell \
+		az acr credential show -n $(REGISTRY_NAME) \
+			--query "join(' ', ['kubectl create secret docker-registry registrykey --docker-server $(REGISTRY_NAME)-on.azurecr.io', '--docker-username', username, '--docker-password', password, '--docker-email example@example.com'])" \
+			--output list \
+	)

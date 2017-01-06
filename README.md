@@ -21,7 +21,16 @@ make create
 # Authenticate kubectl (you need to have one)
 make auth
 
-# Build router image
+# Create private registry
+make registry
+
+# Authenticate Docker to private registry
+make registry-auth
+
+# Create k8s secret to share Docker credentials
+make registry-secret
+
+# Build router Docker image and publish to private registry
 make router-publish
 
 # Provision application
@@ -33,6 +42,13 @@ make demo-apply
 
 # Do not forget to cleanup all this stuff. It is quite pricy.
 make clean
+```
+
+*Sidenote:* if you want to use Makefile you probably need to override varialbes RESOURCE_GROUP, CLUSTER_NAME and REGISTRY_NAME. There are few options here. 
+You can export environmnet varialbes with this names. Or you can specify them in command line:
+
+```
+make group RESOURCE_GROUP=my-own-kubernetes-cluster CLUSTER_NAME=magic REGISTRY_NAME=somethingwithoutdashes
 ```
 
 P.S. Check Makefile, it should be selfexplanatory
